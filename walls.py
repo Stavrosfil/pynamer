@@ -27,53 +27,53 @@ def matches_name(name):
 
 
 def files_to_rename(prefix, extensions):
-    walls = []
-    maxNum = 1
-    filesIterator = os.scandir(basepath)
+    _files_to_rename = []
+    _maxNum = 1
+    _filesIterator = os.scandir(basepath)
 
     print('\nFiles not matching :')
     pl()
 
-    for wall in filesIterator:
-        if wall.is_file():
+    for f in _filesIterator:
+        if f.is_file():
             # The files to rename must be image files or be already named correctly.
-            if not matches_name(wall.name):
-                if bool(re.match(r".+\." + extensions, wall.name)):
-                    walls.append(wall.name)
+            if not matches_name(f.name):
+                if bool(re.match(r".+\." + extensions, f.name)):
+                    _files_to_rename.append(f.name)
             else:
-                maxNum = max(int(re.split(r'(\d+)', wall.name)[1]), maxNum)
+                _maxNum = max(int(re.split(r'(\d+)', f.name)[1]), _maxNum)
 
     # Natural sort.
     # Also see natsort package.
-    walls.sort(key=natural_keys)
+    _files_to_rename.sort(key=natural_keys)
 
-    print(walls)
+    print(_files_to_rename)
 
     pl()
 
-    return (walls, maxNum)
+    return (_files_to_rename, _maxNum)
 
 
 # TODO: Fix new file rename if an old one gets deleted.
-def rename_files(walls, maxNum):
-    i, j = maxNum + 1, 1
-    tempFiles = []
+def rename_files(file_names_list, max_index):
+    i, j = max_index + 1, 1
+    _temp_files = []
 
     print('Preparing to rename image files :')
     pl()
 
-    for wall in walls:
-        suffix = os.path.splitext(wall)[1]
-        tempName = str(j) + '_temp' + suffix
-        os.rename(wall, tempName)
-        tempFiles.append(tempName)
+    for file_name in file_names_list:
+        suffix = os.path.splitext(file_name)[1]
+        temp_name = str(j) + '_temp' + suffix
+        os.rename(file_name, temp_name)
+        _temp_files.append(temp_name)
         j += 1
 
-    for wall in tempFiles:
-        suffix = os.path.splitext(wall)[1]
+    for file_name in _temp_files:
+        suffix = os.path.splitext(file_name)[1]
         newName = prefix + str(i) + suffix
-        print(wall + '\t-->\t' + newName)
-        os.rename(wall, newName)
+        print(file_name + '\t-->\t' + newName)
+        os.rename(file_name, newName)
         i += 1
 
     pl()
@@ -85,12 +85,12 @@ def add_to_readme(wall):
 
 def saveReadme():
     readme = ''
-    readmeList = os.listdir(basepath)
-    readmeList.sort(key=natural_keys)
-    for wall in readmeList:
-        if matches_name(wall):
-            readme += '* ### ' + wall + '\n'
-            readme += '![img](' + wall + ')\n'
+    file_names_list = os.listdir(basepath)
+    file_names_list.sort(key=natural_keys)
+    for f in file_names_list:
+        if matches_name(f):
+            readme += '* ### ' + f + '\n'
+            readme += '![img](' + f + ')\n'
     print('Updating readme...')
     pl()
     f = open('README.md', 'w')
@@ -102,11 +102,11 @@ def saveReadme():
 
 def main():
 
-    # Get the sorted walls list to rename.
-    walls, maxNum = files_to_rename(prefix, extensions)
+    # Get the sorted files list to rename.
+    files_to_rename_list, max_index = files_to_rename(prefix, extensions)
 
     # Rename the files using the sorted list
-    rename_files(walls, maxNum)
+    rename_files(files_to_rename_list, max_index)
 
     saveReadme()
 
