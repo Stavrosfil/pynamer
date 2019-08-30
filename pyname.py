@@ -10,18 +10,25 @@ def pl():
     print('----------------------------------')
 
 
+# Detects int in string and returns is as int
 def atoi(text):
     return int(text) if text.isdigit() else text
 
 
-# This is used for natural sorting of a string list.
-def natural_keys(text):
+# Used for natural sorting of a string list.
+# Splits any string in parts, and detects the ones containing numbers.
+# Extracts the incremental name ID to do natural sorting.
+def extract_id(text):
     """ Turn a string into a list of string and number chunks.
         "z23a" -> ["z", 23, "a"]
     """
+    # Splits string whenever digits are found and returns the index found.
+    # \d: Detect digit.
+    # + : Matches one to unlimited times.
     return [atoi(c) for c in re.split(r'(\d+)', text)]
 
 
+# Returns true if the string given matches our naming scheme.
 def matches_name(name):
     return bool(re.match(prefix + r"[0-9]+\." + extensions, name))
 
@@ -41,11 +48,11 @@ def files_to_rename(prefix, extensions):
                 if bool(re.match(r".+\." + extensions, f.name)):
                     _files_to_rename.append(f.name)
             else:
-                _maxNum = max(int(re.split(r'(\d+)', f.name)[1]), _maxNum)
+                _maxNum = max(extract_id(f.name), _maxNum)
 
     # Natural sort.
     # Also see natsort package.
-    _files_to_rename.sort(key=natural_keys)
+    _files_to_rename.sort(key=extract_id)
 
     print(_files_to_rename)
 
@@ -54,7 +61,6 @@ def files_to_rename(prefix, extensions):
     return (_files_to_rename, _maxNum)
 
 
-# TODO: Fix new file rename if an old one gets deleted.
 def rename_files(file_names_list, max_index):
     i, j = max_index + 1, 1
     _temp_files = []
@@ -86,17 +92,20 @@ def add_to_readme(wall):
 def saveReadme():
     readme = ''
     file_names_list = os.listdir(basepath)
-    file_names_list.sort(key=natural_keys)
+    file_names_list.sort(key=extract_id)
     for f in file_names_list:
         if matches_name(f):
             readme += '* ### ' + f + '\n'
             readme += '![img](' + f + ')\n'
+
     print('Updating readme...')
     pl()
+
     f = open('README.md', 'w')
     f.write(readme)
     print(readme)
     f.close()
+
     pl()
 
 
