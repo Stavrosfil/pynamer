@@ -29,7 +29,11 @@ def natural_keys(text):
 
 
 def extract_id(text):
-    return natural_keys(text)[1]
+    file_id = natural_keys(text)
+    for i in file_id:
+        if isinstance(i, int):
+            return i
+    return -1
 
 
 # Returns true if the string given matches our naming scheme.
@@ -53,6 +57,7 @@ def files_to_rename(prefix, extensions):
                     _files_to_rename.append(f.name)
             else:
                 _maxNum = max(extract_id(f.name), _maxNum)
+                # print(os.stat(basepath + f.name))
 
     # Natural sort.
     # Also see natsort package.
