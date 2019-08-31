@@ -1,7 +1,7 @@
 import os
 import re
 
-basepath = '.'
+basepath = 'testing/'
 prefix = 'wall_'
 extensions = '(jpg|png)'
 
@@ -18,7 +18,7 @@ def atoi(text):
 # Used for natural sorting of a string list.
 # Splits any string in parts, and detects the ones containing numbers.
 # Extracts the incremental name ID to do natural sorting.
-def extract_id(text):
+def natural_keys(text):
     """ Turn a string into a list of string and number chunks.
         "z23a" -> ["z", 23, "a"]
     """
@@ -28,6 +28,10 @@ def extract_id(text):
     return [atoi(c) for c in re.split(r'(\d+)', text)]
 
 
+def extract_id(text):
+    return natural_keys(text)[1]
+
+
 # Returns true if the string given matches our naming scheme.
 def matches_name(name):
     return bool(re.match(prefix + r"[0-9]+\." + extensions, name))
@@ -35,7 +39,7 @@ def matches_name(name):
 
 def files_to_rename(prefix, extensions):
     _files_to_rename = []
-    _maxNum = 1
+    _maxNum = 0
     _filesIterator = os.scandir(basepath)
 
     print('\nFiles not matching :')
@@ -52,7 +56,7 @@ def files_to_rename(prefix, extensions):
 
     # Natural sort.
     # Also see natsort package.
-    _files_to_rename.sort(key=extract_id)
+    _files_to_rename.sort(key=natural_keys)
 
     print(_files_to_rename)
 
@@ -92,7 +96,7 @@ def add_to_readme(wall):
 def saveReadme():
     readme = ''
     file_names_list = os.listdir(basepath)
-    file_names_list.sort(key=extract_id)
+    file_names_list.sort(key=natural_keys)
     for f in file_names_list:
         if matches_name(f):
             readme += '* ### ' + f + '\n'
@@ -101,7 +105,7 @@ def saveReadme():
     print('Updating readme...')
     pl()
 
-    f = open('README.md', 'w')
+    f = open(basepath + 'README.md', 'w')
     f.write(readme)
     print(readme)
     f.close()
